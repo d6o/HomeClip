@@ -1,4 +1,43 @@
 (function() {
+    // Theme management
+    const themeToggle = document.getElementById('theme-toggle');
+    const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');
+    
+    function initTheme() {
+        const savedTheme = localStorage.getItem('theme');
+        
+        if (savedTheme) {
+            document.body.setAttribute('data-theme', savedTheme);
+        } else if (prefersDarkScheme.matches) {
+            document.body.setAttribute('data-theme', 'dark');
+        } else {
+            document.body.setAttribute('data-theme', 'light');
+        }
+    }
+    
+    function toggleTheme() {
+        const currentTheme = document.body.getAttribute('data-theme');
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        
+        document.body.setAttribute('data-theme', newTheme);
+        localStorage.setItem('theme', newTheme);
+    }
+    
+    // Initialize theme
+    initTheme();
+    
+    // Theme toggle button
+    themeToggle.addEventListener('click', toggleTheme);
+    
+    // Listen for system theme changes
+    prefersDarkScheme.addEventListener('change', (e) => {
+        // Only update if user hasn't manually set a theme
+        if (!localStorage.getItem('theme')) {
+            document.body.setAttribute('data-theme', e.matches ? 'dark' : 'light');
+        }
+    });
+    
+    // Main app functionality
     const editor = document.getElementById('editor');
     const status = document.getElementById('status');
     
@@ -180,8 +219,8 @@
                     </div>
                 </div>
                 <div class="file-actions">
-                    <button class="file-action-btn download-btn" data-id="${file.id}" data-name="${file.fileName}">↓</button>
-                    <button class="file-action-btn delete-btn" data-id="${file.id}">×</button>
+                    <button class="file-action-btn download-btn" data-id="${file.id}" data-name="${file.fileName}">Download</button>
+                    <button class="file-action-btn delete-btn" data-id="${file.id}">Delete</button>
                 </div>
             `;
             
