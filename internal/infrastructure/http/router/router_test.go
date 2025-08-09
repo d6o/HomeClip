@@ -22,7 +22,7 @@ import (
 	"github.com/d6o/homeclip/internal/infrastructure/http/handlers"
 )
 
-//go:embed testdata/static/*
+//go:embed static/*
 var testStaticFiles embed.FS
 
 func TestNewRouter(t *testing.T) {
