@@ -1,3 +1,9 @@
+## [1.1.0](https://github.com/d6o/homeclip/compare/v1.0.0...v1.1.0) (2025-08-09)
+
+### Features
+
+* clean changelog file ([837e098](https://github.com/d6o/homeclip/commit/837e0986907dfb838480aeda80e36236d4cc7db9))
+
 ## 1.0.0 (2025-08-09)
 
 ### Features
