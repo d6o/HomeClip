@@ -164,6 +164,12 @@ jobs:
             COMMIT=${{ github.sha }}
             BUILD_DATE=${{ github.event.head_commit.timestamp }}
 
+      - name: Wait for image availability
+        run: |
+          echo "Waiting for image to be available in registry..."
+          sleep 10
+          docker pull ghcr.io/${{ github.repository }}:${{ needs.release.outputs.new_release_version }}
+          
       - name: Generate SBOM
         uses: anchore/sbom-action@v0
         with:
