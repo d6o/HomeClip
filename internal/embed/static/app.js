@@ -260,15 +260,19 @@
                     body: formData
                 });
                 
-                if (!response.ok) {
-                    throw new Error('Failed to upload file');
+                const data = await response.json();
+                
+                if (!response.ok || !data.success) {
+                    const errorMsg = data.error || 'Failed to upload file';
+                    throw new Error(errorMsg);
                 }
                 
                 updateStatus('File uploaded', 'saved');
                 loadFiles();
             } catch (error) {
                 console.error('Error uploading file:', error);
-                updateStatus('Upload failed', 'error');
+                const errorMessage = error.message || 'Upload failed';
+                updateStatus(`Error: ${errorMessage}`, 'error');
             }
         }
         
