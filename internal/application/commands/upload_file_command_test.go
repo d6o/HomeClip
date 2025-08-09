@@ -134,43 +134,12 @@ func TestUploadFileCommandHandler_Handle_InvalidFileName(t *testing.T) {
 	}
 }
 
-func TestUploadFileCommandHandler_Handle_InvalidMimeType(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	// Setup mocks
-	mockDocRepo := repositories.NewMockDocumentRepository(ctrl)
-	mockFileStorage := repositories.NewMockFileStorageRepository(ctrl)
-	documentService := services.NewDocumentService(mockDocRepo)
-	
-	handler := NewUploadFileCommandHandler(
-		documentService,
-		mockDocRepo,
-		mockFileStorage,
-	)
-
-	ctx := context.Background()
-	
-	// Execute command with invalid mime type
-	cmd := UploadFileCommand{
-		DocumentID: "test-doc",
-		FileName:   "test.exe",
-		MimeType:   "application/x-executable", // Not allowed
-		Size:       100,
-		Reader:     bytes.NewReader([]byte("content")),
-	}
-	
-	attachment, err := handler.Handle(ctx, cmd)
-	
-	// Assertions
-	if err == nil {
-		t.Fatal("Expected error for invalid mime type, got nil")
-	}
-	
-	if attachment != nil {
-		t.Error("Expected nil attachment on error")
-	}
-}
+// TestUploadFileCommandHandler_Handle_InvalidMimeType has been removed
+// as the application now accepts all MIME types.
+// Previously tested: application/x-executable
+// func TestUploadFileCommandHandler_Handle_InvalidMimeType(t *testing.T) {
+// 	... test removed ...
+// }
 
 func TestUploadFileCommandHandler_Handle_FileTooLarge(t *testing.T) {
 	ctrl := gomock.NewController(t)
