@@ -2,7 +2,7 @@ package repositories
 
 import (
 	"context"
-	
+
 	"github.com/d6o/homeclip/internal/domain/entities"
 )
 

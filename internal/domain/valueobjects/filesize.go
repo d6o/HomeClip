@@ -2,7 +2,7 @@ package valueobjects
 
 import "errors"
 
-const MaxFileSize = 50 * 1024 * 1024 // 50MB to support larger files
+const MaxFileSize = 50 * 1024 * 1024
 
 var (
 	ErrFileTooLarge = errors.New("file exceeds maximum allowed size")

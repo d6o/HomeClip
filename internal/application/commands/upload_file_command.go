@@ -21,9 +21,9 @@ type UploadFileCommand struct {
 }
 
 type UploadFileCommandHandler struct {
-	documentService   services.DocumentServiceInterface
-	documentRepo      repositories.DocumentRepository
-	fileStorageRepo   repositories.FileStorageRepository
+	documentService services.DocumentServiceInterface
+	documentRepo    repositories.DocumentRepository
+	fileStorageRepo repositories.FileStorageRepository
 }
 
 func NewUploadFileCommandHandler(
@@ -39,7 +39,6 @@ func NewUploadFileCommandHandler(
 }
 
 func (h *UploadFileCommandHandler) Handle(ctx context.Context, cmd UploadFileCommand) (*entities.Attachment, error) {
-	// Validate file metadata
 	fileName, err := valueobjects.NewFileName(cmd.FileName)
 	if err != nil {
 		return nil, err
@@ -55,10 +54,8 @@ func (h *UploadFileCommandHandler) Handle(ctx context.Context, cmd UploadFileCom
 		return nil, err
 	}
 
-	// Generate attachment ID
 	attachmentID := entities.AttachmentID(generateID())
 
-	// Get or create document
 	documentID := entities.DocumentID(cmd.DocumentID)
 	if documentID == "" {
 		documentID = entities.DefaultDocumentID
@@ -69,7 +66,6 @@ func (h *UploadFileCommandHandler) Handle(ctx context.Context, cmd UploadFileCom
 		return nil, err
 	}
 
-	// Create attachment entity
 	attachment := entities.NewAttachment(
 		attachmentID,
 		documentID,
@@ -78,21 +74,16 @@ func (h *UploadFileCommandHandler) Handle(ctx context.Context, cmd UploadFileCom
 		size,
 	)
 
-	// Store file content
 	if err := h.fileStorageRepo.Store(ctx, attachmentID, cmd.Reader); err != nil {
 		return nil, err
 	}
 
-	// Add attachment to document
 	if err := document.AddAttachment(attachment); err != nil {
-		// Rollback: delete stored file
 		h.fileStorageRepo.Delete(ctx, attachmentID)
 		return nil, err
 	}
 
-	// Save document
 	if err := h.documentRepo.Save(ctx, document); err != nil {
-		// Rollback: delete stored file
 		h.fileStorageRepo.Delete(ctx, attachmentID)
 		return nil, err
 	}

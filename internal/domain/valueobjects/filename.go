@@ -22,7 +22,6 @@ func NewFileName(name string) (FileName, error) {
 		return FileName{}, ErrInvalidFileName
 	}
 
-	// Basic security check for path traversal
 	if strings.Contains(name, "..") || strings.Contains(name, "/") || strings.Contains(name, "\\") {
 		return FileName{}, ErrInvalidFileName
 	}

@@ -9,13 +9,10 @@ import (
 const (
 	DefaultExpirationDuration = 24 * time.Hour
 	MinExpirationDuration     = 1 * time.Minute
-	MaxExpirationDuration     = 7 * 24 * time.Hour // 7 days
+	MaxExpirationDuration     = 7 * 24 * time.Hour
 )
 
-var (
-	ErrInvalidExpiration = errors.New("invalid expiration time")
-	ErrExpired           = errors.New("content has expired")
-)
+var ErrExpired = errors.New("content has expired")
 
 type ExpirationTime struct {
 	value time.Time
@@ -66,7 +63,7 @@ func (e ExpirationTime) HumanReadable() string {
 	if remaining == 0 {
 		return "Expired"
 	}
-	
+
 	hours := int(remaining.Hours())
 	if hours >= 24 {
 		days := hours / 24
@@ -75,14 +72,14 @@ func (e ExpirationTime) HumanReadable() string {
 		}
 		return fmt.Sprintf("Expires in %d days", days)
 	}
-	
+
 	if hours > 0 {
 		if hours == 1 {
 			return "Expires in 1 hour"
 		}
 		return fmt.Sprintf("Expires in %d hours", hours)
 	}
-	
+
 	minutes := int(remaining.Minutes())
 	if minutes == 1 {
 		return "Expires in 1 minute"
@@ -93,10 +90,10 @@ func (e ExpirationTime) HumanReadable() string {
 func (e ExpirationTime) ExtendBy(duration time.Duration) ExpirationTime {
 	newExpiration := e.value.Add(duration)
 	maxExpiration := time.Now().UTC().Add(MaxExpirationDuration)
-	
+
 	if newExpiration.After(maxExpiration) {
 		newExpiration = maxExpiration
 	}
-	
+
 	return ExpirationTime{value: newExpiration}
 }

@@ -87,11 +87,11 @@ func TestContent_Equals(t *testing.T) {
 
 func TestEmptyContent(t *testing.T) {
 	content := EmptyContent()
-	
+
 	if !content.IsEmpty() {
 		t.Error("Expected EmptyContent to return empty content")
 	}
-	
+
 	if content.Value() != "" {
 		t.Error("Expected EmptyContent value to be empty string")
 	}

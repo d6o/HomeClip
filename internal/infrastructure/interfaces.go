@@ -8,7 +8,6 @@ import (
 
 //go:generate go tool mockgen -source=interfaces.go -destination=mocks.go -package=infrastructure
 
-// HTTPServer interface for the server
 type HTTPServer interface {
 	Start() error
 	Shutdown(ctx context.Context) error
@@ -16,23 +15,19 @@ type HTTPServer interface {
 	URL() string
 }
 
-// Router interface for HTTP routing
 type Router interface {
 	ServeHTTP(w http.ResponseWriter, r *http.Request)
 }
 
-// CleanupService interface for cleanup operations
 type CleanupService interface {
 	Start(ctx context.Context)
 	Stop()
 }
 
-// ConfigLoader interface for configuration
 type ConfigLoader interface {
 	LoadConfig() *Config
 }
 
-// Config represents the application configuration
 type Config struct {
 	Port                  string
 	ReadTimeout           time.Duration

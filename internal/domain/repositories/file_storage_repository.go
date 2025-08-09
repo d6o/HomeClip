@@ -3,7 +3,7 @@ package repositories
 import (
 	"context"
 	"io"
-	
+
 	"github.com/d6o/homeclip/internal/domain/entities"
 )
 

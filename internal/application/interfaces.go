@@ -11,7 +11,6 @@ import (
 
 //go:generate go tool mockgen -source=interfaces.go -destination=mocks.go -package=application
 
-// Command Handlers
 type UpdateContentCommandHandler interface {
 	Handle(ctx context.Context, cmd commands.UpdateContentCommand) (*dtos.UpdateContentResponse, error)
 }
@@ -24,7 +23,6 @@ type DeleteFileCommandHandler interface {
 	Handle(ctx context.Context, cmd commands.DeleteFileCommand) error
 }
 
-// Query Handlers
 type GetContentQueryHandler interface {
 	Handle(ctx context.Context, query queries.GetContentQuery) (*dtos.GetContentResponse, error)
 }
@@ -37,7 +35,6 @@ type ListFilesQueryHandler interface {
 	Handle(ctx context.Context, query queries.ListFilesQuery) ([]*entities.Attachment, error)
 }
 
-// Application Service
 type DocumentApplicationService interface {
 	GetContent(ctx context.Context, documentID string) (*dtos.GetContentResponse, error)
 	UpdateContent(ctx context.Context, documentID string, content string) (*dtos.UpdateContentResponse, error)

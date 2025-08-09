@@ -6,10 +6,7 @@ import (
 	"github.com/d6o/homeclip/internal/domain/valueobjects"
 )
 
-var (
-	ErrDocumentNotFound = errors.New("document not found")
-	ErrInvalidDocument  = errors.New("invalid document")
-)
+var ErrDocumentNotFound = errors.New("document not found")
 
 type DocumentID string
 
@@ -69,16 +66,16 @@ func (d *Document) UpdateContent(newContent valueobjects.Content) error {
 	if d.IsExpired() {
 		return valueobjects.ErrExpired
 	}
-	
+
 	if d.content.Equals(newContent) {
 		return nil
 	}
 
 	d.content = newContent
 	d.lastUpdated = valueobjects.NewTimestamp()
-	d.expiresAt = valueobjects.NewDefaultExpirationTime() // Reset expiration on update
+	d.expiresAt = valueobjects.NewDefaultExpirationTime()
 	d.version++
-	
+
 	return nil
 }
 
@@ -101,14 +98,14 @@ func (d *Document) AddAttachment(attachment *Attachment) error {
 	if d.IsExpired() {
 		return valueobjects.ErrExpired
 	}
-	
+
 	if _, exists := d.attachments[attachment.ID()]; exists {
 		return ErrDuplicateAttachment
 	}
-	
+
 	d.attachments[attachment.ID()] = attachment
 	d.lastUpdated = valueobjects.NewTimestamp()
-	d.expiresAt = valueobjects.NewDefaultExpirationTime() // Reset expiration on attachment
+	d.expiresAt = valueobjects.NewDefaultExpirationTime()
 	d.version++
 	return nil
 }
@@ -117,7 +114,7 @@ func (d *Document) RemoveAttachment(attachmentID AttachmentID) error {
 	if _, exists := d.attachments[attachmentID]; !exists {
 		return ErrAttachmentNotFound
 	}
-	
+
 	delete(d.attachments, attachmentID)
 	d.lastUpdated = valueobjects.NewTimestamp()
 	d.version++
