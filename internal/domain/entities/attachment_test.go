@@ -24,7 +24,7 @@ func TestNewAttachment(t *testing.T) {
 
 	attachmentID := AttachmentID("attachment-1")
 	documentID := DocumentID("doc-1")
-	
+
 	attachment := NewAttachment(attachmentID, documentID, fileName, mimeType, fileSize)
 
 	if attachment.ID() != attachmentID {
@@ -56,53 +56,5 @@ func TestNewAttachment(t *testing.T) {
 	}
 }
 
-func TestAttachment_IsImage(t *testing.T) {
-	tests := []struct {
-		name     string
-		mimeType string
-		want     bool
-	}{
-		{"jpeg image", "image/jpeg", true},
-		{"png image", "image/png", true},
-		{"text file", "text/plain", false},
-		{"pdf file", "application/pdf", false},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			fileName, _ := valueobjects.NewFileName("test")
-			mimeType, _ := valueobjects.NewMimeType(tt.mimeType)
-			fileSize, _ := valueobjects.NewFileSize(100)
-			
-			attachment := NewAttachment("id", "doc-id", fileName, mimeType, fileSize)
-			
-			if got := attachment.IsImage(); got != tt.want {
-				t.Errorf("IsImage() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestAttachment_IsText(t *testing.T) {
-	fileName, _ := valueobjects.NewFileName("test.txt")
-	mimeType, _ := valueobjects.NewMimeType("text/plain")
-	fileSize, _ := valueobjects.NewFileSize(100)
-	
-	attachment := NewAttachment("id", "doc-id", fileName, mimeType, fileSize)
-	
-	if !attachment.IsText() {
-		t.Error("Expected text file to return true for IsText()")
-	}
-}
-
-func TestAttachment_IsPDF(t *testing.T) {
-	fileName, _ := valueobjects.NewFileName("test.pdf")
-	mimeType, _ := valueobjects.NewMimeType("application/pdf")
-	fileSize, _ := valueobjects.NewFileSize(100)
-	
-	attachment := NewAttachment("id", "doc-id", fileName, mimeType, fileSize)
-	
-	if !attachment.IsPDF() {
-		t.Error("Expected PDF file to return true for IsPDF()")
-	}
-}
+// Type checking methods (IsImage, IsText, IsPDF) have been moved to the MimeType value object
+// and are tested in valueobjects/file_test.go

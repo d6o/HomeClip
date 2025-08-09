@@ -7,21 +7,20 @@ import (
 )
 
 var (
-	ErrAttachmentNotFound = errors.New("attachment not found")
-	ErrInvalidAttachment  = errors.New("invalid attachment")
+	ErrAttachmentNotFound  = errors.New("attachment not found")
 	ErrDuplicateAttachment = errors.New("duplicate attachment")
 )
 
 type AttachmentID string
 
 type Attachment struct {
-	id          AttachmentID
-	documentID  DocumentID
-	fileName    valueobjects.FileName
-	mimeType    valueobjects.MimeType
-	size        valueobjects.FileSize
-	uploadedAt  valueobjects.Timestamp
-	expiresAt   valueobjects.ExpirationTime
+	id         AttachmentID
+	documentID DocumentID
+	fileName   valueobjects.FileName
+	mimeType   valueobjects.MimeType
+	size       valueobjects.FileSize
+	uploadedAt valueobjects.Timestamp
+	expiresAt  valueobjects.ExpirationTime
 }
 
 func NewAttachment(
@@ -84,18 +83,6 @@ func (a *Attachment) Size() valueobjects.FileSize {
 
 func (a *Attachment) UploadedAt() valueobjects.Timestamp {
 	return a.uploadedAt
-}
-
-func (a *Attachment) IsImage() bool {
-	return a.mimeType.IsImage()
-}
-
-func (a *Attachment) IsText() bool {
-	return a.mimeType.IsText()
-}
-
-func (a *Attachment) IsPDF() bool {
-	return a.mimeType.IsPDF()
 }
 
 func (a *Attachment) ExpiresAt() valueobjects.ExpirationTime {
