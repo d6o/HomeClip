@@ -113,7 +113,7 @@ func TestExpirationTime_HumanReadable(t *testing.T) {
 		},
 		{
 			name:     "multiple hours",
-			duration: 5 * time.Hour,
+			duration: 5*time.Hour + 30*time.Minute,
 			contains: "5 hours",
 		},
 		{
@@ -123,14 +123,14 @@ func TestExpirationTime_HumanReadable(t *testing.T) {
 		},
 		{
 			name:     "multiple days",
-			duration: 3 * 24 * time.Hour,
+			duration: 3*24*time.Hour + 1*time.Hour,
 			contains: "3 days",
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			expiration := ExpirationTimeFrom(time.Now().Add(tt.duration))
+			expiration := ExpirationTimeFrom(time.Now().UTC().Add(tt.duration))
 			readable := expiration.HumanReadable()
 			
 			if !strings.Contains(readable, tt.contains) {
