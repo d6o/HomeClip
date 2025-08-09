@@ -1,3 +1,9 @@
+## [1.1.1](https://github.com/d6o/homeclip/compare/v1.1.0...v1.1.1) (2025-08-09)
+
+### Bug Fixes
+
+* update semantic-release to use action and fix Docker publishing ([6487fc6](https://github.com/d6o/homeclip/commit/6487fc6bc92946648d0ca809451c508013a92274))
+
 ## [1.1.0](https://github.com/d6o/homeclip/compare/v1.0.0...v1.1.0) (2025-08-09)
 
 ### Features
