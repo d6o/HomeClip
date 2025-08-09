@@ -164,17 +164,22 @@ jobs:
             COMMIT=${{ github.sha }}
             BUILD_DATE=${{ github.event.head_commit.timestamp }}
 
+      - name: Set lowercase repository name
+        id: repo
+        run: |
+          REPO_LOWER=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+          echo "name_lower=${REPO_LOWER}" >> $GITHUB_OUTPUT
+          
       - name: Wait for image availability
         run: |
           echo "Waiting for image to be available in registry..."
           sleep 10
-          REPO_LOWER=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
-          docker pull ghcr.io/${REPO_LOWER}:${{ needs.release.outputs.new_release_version }}
+          docker pull ghcr.io/${{ steps.repo.outputs.name_lower }}:${{ needs.release.outputs.new_release_version }}
           
       - name: Generate SBOM
         uses: anchore/sbom-action@v0
         with:
-          image: ghcr.io/${{ github.repository }}:${{ needs.release.outputs.new_release_version }}
+          image: ghcr.io/${{ steps.repo.outputs.name_lower }}:${{ needs.release.outputs.new_release_version }}
           format: spdx-json
           output-file: sbom.spdx.json
 
