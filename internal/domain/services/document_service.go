@@ -9,10 +9,6 @@ import (
 	"github.com/d6o/homeclip/internal/domain/valueobjects"
 )
 
-var (
-	ErrDocumentServiceFailure = errors.New("document service failure")
-)
-
 type DocumentService struct {
 	repository repositories.DocumentRepository
 }

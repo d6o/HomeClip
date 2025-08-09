@@ -6,20 +6,21 @@ import (
 	"strings"
 	"testing"
 
+	"go.uber.org/mock/gomock"
+
 	"github.com/d6o/homeclip/internal/domain/entities"
 	"github.com/d6o/homeclip/internal/domain/repositories"
 	"github.com/d6o/homeclip/internal/domain/valueobjects"
-	"go.uber.org/mock/gomock"
 )
 
 func TestDocumentService_GetOrCreateDocument_ExistingDocument(t *testing.T) {
 	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
+	t.Cleanup(ctrl.Finish)
 
 	mockRepo := repositories.NewMockDocumentRepository(ctrl)
 	service := NewDocumentService(mockRepo)
 
-	ctx := context.Background()
+	ctx := t.Context()
 	id := entities.DocumentID("test-doc")
 	existingDoc := entities.NewDocument(id)
 
@@ -39,12 +40,12 @@ func TestDocumentService_GetOrCreateDocument_ExistingDocument(t *testing.T) {
 
 func TestDocumentService_GetOrCreateDocument_NewDocument(t *testing.T) {
 	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
+	t.Cleanup(ctrl.Finish)
 
 	mockRepo := repositories.NewMockDocumentRepository(ctrl)
 	service := NewDocumentService(mockRepo)
 
-	ctx := context.Background()
+	ctx := t.Context()
 	id := entities.DocumentID("test-doc")
 
 	mockRepo.EXPECT().
@@ -72,12 +73,12 @@ func TestDocumentService_GetOrCreateDocument_NewDocument(t *testing.T) {
 
 func TestDocumentService_GetOrCreateDocument_RepositoryError(t *testing.T) {
 	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
+	t.Cleanup(ctrl.Finish)
 
 	mockRepo := repositories.NewMockDocumentRepository(ctrl)
 	service := NewDocumentService(mockRepo)
 
-	ctx := context.Background()
+	ctx := t.Context()
 	id := entities.DocumentID("test-doc")
 	expectedErr := errors.New("repository error")
 
@@ -90,19 +91,19 @@ func TestDocumentService_GetOrCreateDocument_RepositoryError(t *testing.T) {
 		t.Fatal("Expected error, got nil")
 	}
 
-	if err != expectedErr {
+	if !errors.Is(err, expectedErr) {
 		t.Errorf("Expected error %v, got %v", expectedErr, err)
 	}
 }
 
 func TestDocumentService_UpdateDocumentContent(t *testing.T) {
 	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
+	t.Cleanup(ctrl.Finish)
 
 	mockRepo := repositories.NewMockDocumentRepository(ctrl)
 	service := NewDocumentService(mockRepo)
 
-	ctx := context.Background()
+	ctx := t.Context()
 	id := entities.DocumentID("test-doc")
 	existingDoc := entities.NewDocument(id)
 	contentValue := "updated content"
@@ -132,14 +133,14 @@ func TestDocumentService_UpdateDocumentContent(t *testing.T) {
 
 func TestDocumentService_UpdateDocumentContent_InvalidContent(t *testing.T) {
 	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
+	t.Cleanup(ctrl.Finish)
 
 	mockRepo := repositories.NewMockDocumentRepository(ctrl)
 	service := NewDocumentService(mockRepo)
 
-	ctx := context.Background()
+	ctx := t.Context()
 	id := entities.DocumentID("test-doc")
-	// Create content that exceeds max size
+
 	contentValue := strings.Repeat("a", valueobjects.MaxContentLength+1)
 
 	_, err := service.UpdateDocumentContent(ctx, id, contentValue)
@@ -147,19 +148,19 @@ func TestDocumentService_UpdateDocumentContent_InvalidContent(t *testing.T) {
 		t.Fatal("Expected error for invalid content, got nil")
 	}
 
-	if err != valueobjects.ErrContentTooLarge {
+	if !errors.Is(err, valueobjects.ErrContentTooLarge) {
 		t.Errorf("Expected ErrContentTooLarge, got %v", err)
 	}
 }
 
 func TestDocumentService_UpdateDocumentContent_SaveError(t *testing.T) {
 	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
+	t.Cleanup(ctrl.Finish)
 
 	mockRepo := repositories.NewMockDocumentRepository(ctrl)
 	service := NewDocumentService(mockRepo)
 
-	ctx := context.Background()
+	ctx := t.Context()
 	id := entities.DocumentID("test-doc")
 	existingDoc := entities.NewDocument(id)
 	contentValue := "updated content"
@@ -174,7 +175,7 @@ func TestDocumentService_UpdateDocumentContent_SaveError(t *testing.T) {
 		Return(saveErr)
 
 	_, err := service.UpdateDocumentContent(ctx, id, contentValue)
-	if err != saveErr {
+	if !errors.Is(err, saveErr) {
 		t.Errorf("Expected error %v, got %v", saveErr, err)
 	}
 }

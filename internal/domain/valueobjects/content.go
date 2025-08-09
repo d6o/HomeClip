@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-const MaxContentLength = 1048576 // 1MB
+const MaxContentLength = 1048576
 
 var (
 	ErrContentTooLarge = errors.New("content exceeds maximum allowed size")

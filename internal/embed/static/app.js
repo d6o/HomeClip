@@ -1,5 +1,4 @@
 (function() {
-    // Theme management
     const themeToggle = document.getElementById('theme-toggle');
     const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');
     
@@ -23,21 +22,16 @@
         localStorage.setItem('theme', newTheme);
     }
     
-    // Initialize theme
     initTheme();
     
-    // Theme toggle button
     themeToggle.addEventListener('click', toggleTheme);
     
-    // Listen for system theme changes
     prefersDarkScheme.addEventListener('change', (e) => {
-        // Only update if user hasn't manually set a theme
         if (!localStorage.getItem('theme')) {
             document.body.setAttribute('data-theme', e.matches ? 'dark' : 'light');
         }
     });
     
-    // Main app functionality
     const editor = document.getElementById('editor');
     const status = document.getElementById('status');
     
@@ -64,12 +58,10 @@
             const data = await response.json();
             editor.value = data.content || '';
             
-            // Load files list
             if (data.attachments) {
                 displayFiles(data.attachments);
             }
             
-            // Display expiration time
             if (data.expiresAt) {
                 displayExpiration(data.expiresAt);
             }
@@ -148,7 +140,6 @@
         }
     });
     
-    // File handling
     const fileInput = document.getElementById('file-input');
     const filesList = document.getElementById('files-list');
     
@@ -186,7 +177,6 @@
             const expirationText = formatExpiration(expiresAt);
             expirationDiv.textContent = expirationText;
             
-            // Update expiration display every minute
             setTimeout(() => displayExpiration(expiresAt), 60000);
         }
     }
@@ -234,7 +224,6 @@
             filesList.appendChild(fileItem);
         });
         
-        // Add event listeners
         document.querySelectorAll('.download-btn').forEach(btn => {
             btn.addEventListener('click', handleDownload);
         });
@@ -276,7 +265,6 @@
             }
         }
         
-        // Reset input
         event.target.value = '';
         setTimeout(() => updateStatus('Ready', 'saved'), 2000);
     }

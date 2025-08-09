@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"go.uber.org/mock/gomock"
+
 	"github.com/d6o/homeclip/internal/domain/entities"
 	"github.com/d6o/homeclip/internal/domain/repositories"
 	domainservices "github.com/d6o/homeclip/internal/domain/services"
@@ -15,7 +16,7 @@ import (
 
 func TestNewCleanupService(t *testing.T) {
 	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
+	t.Cleanup(ctrl.Finish)
 
 	mockDocRepo := repositories.NewMockDocumentRepository(ctrl)
 	mockFileStorage := repositories.NewMockFileStorageRepository(ctrl)
@@ -55,7 +56,7 @@ func TestNewCleanupService(t *testing.T) {
 
 func TestCleanupService_Start_Stop(t *testing.T) {
 	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
+	t.Cleanup(ctrl.Finish)
 
 	mockDocRepo := repositories.NewMockDocumentRepository(ctrl)
 	mockFileStorage := repositories.NewMockFileStorageRepository(ctrl)
@@ -63,12 +64,10 @@ func TestCleanupService_Start_Stop(t *testing.T) {
 	interval := 100 * time.Millisecond
 
 	service := NewCleanupService(mockDocRepo, mockFileStorage, expirationService, interval)
-	ctx := context.Background()
+	ctx := t.Context()
 
-	// Start the service
 	service.Start(ctx)
 
-	// Verify it's running
 	service.mu.Lock()
 	running := service.running
 	service.mu.Unlock()
@@ -77,13 +76,10 @@ func TestCleanupService_Start_Stop(t *testing.T) {
 		t.Error("Expected service to be running after Start")
 	}
 
-	// Give it time to start
 	time.Sleep(50 * time.Millisecond)
 
-	// Stop the service
 	service.Stop()
 
-	// Verify it's stopped
 	service.mu.Lock()
 	running = service.running
 	service.mu.Unlock()
@@ -95,7 +91,7 @@ func TestCleanupService_Start_Stop(t *testing.T) {
 
 func TestCleanupService_Start_AlreadyRunning(t *testing.T) {
 	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
+	t.Cleanup(ctrl.Finish)
 
 	mockDocRepo := repositories.NewMockDocumentRepository(ctrl)
 	mockFileStorage := repositories.NewMockFileStorageRepository(ctrl)
@@ -103,16 +99,13 @@ func TestCleanupService_Start_AlreadyRunning(t *testing.T) {
 	interval := 100 * time.Millisecond
 
 	service := NewCleanupService(mockDocRepo, mockFileStorage, expirationService, interval)
-	ctx := context.Background()
+	ctx := t.Context()
 
-	// Start the service
 	service.Start(ctx)
 	defer service.Stop()
 
-	// Try to start again - should not panic
 	service.Start(ctx)
 
-	// Verify still running
 	service.mu.Lock()
 	running := service.running
 	service.mu.Unlock()
@@ -124,7 +117,7 @@ func TestCleanupService_Start_AlreadyRunning(t *testing.T) {
 
 func TestCleanupService_Stop_NotRunning(t *testing.T) {
 	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
+	t.Cleanup(ctrl.Finish)
 
 	mockDocRepo := repositories.NewMockDocumentRepository(ctrl)
 	mockFileStorage := repositories.NewMockFileStorageRepository(ctrl)
@@ -133,10 +126,8 @@ func TestCleanupService_Stop_NotRunning(t *testing.T) {
 
 	service := NewCleanupService(mockDocRepo, mockFileStorage, expirationService, interval)
 
-	// Stop without starting - should not panic
 	service.Stop()
 
-	// Verify still not running
 	service.mu.Lock()
 	running := service.running
 	service.mu.Unlock()
@@ -148,7 +139,7 @@ func TestCleanupService_Stop_NotRunning(t *testing.T) {
 
 func TestCleanupService_CleanupDocument_Expired(t *testing.T) {
 	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
+	t.Cleanup(ctrl.Finish)
 
 	mockDocRepo := repositories.NewMockDocumentRepository(ctrl)
 	mockFileStorage := repositories.NewMockFileStorageRepository(ctrl)
@@ -156,21 +147,37 @@ func TestCleanupService_CleanupDocument_Expired(t *testing.T) {
 	interval := 5 * time.Minute
 
 	service := NewCleanupService(mockDocRepo, mockFileStorage, expirationService, interval)
-	ctx := context.Background()
+	ctx := t.Context()
 
-	// Create an expired document with attachments
 	docID := entities.DocumentID("test-doc")
-	
-	// Create a document with past expiration time
+
 	expiredTime := valueobjects.ExpirationTimeFrom(time.Now().Add(-25 * time.Hour))
-	
-	fileName1, _ := valueobjects.NewFileName("file1.txt")
-	fileName2, _ := valueobjects.NewFileName("file2.txt")
-	mimeType1, _ := valueobjects.NewMimeType("text/plain")
-	mimeType2, _ := valueobjects.NewMimeType("text/plain")
-	fileSize1, _ := valueobjects.NewFileSize(100)
-	fileSize2, _ := valueobjects.NewFileSize(200)
-	
+
+	fileName1, err := valueobjects.NewFileName("file1.txt")
+	if err != nil {
+		t.Fatalf("Failed to create fileName1: %v", err)
+	}
+	fileName2, err := valueobjects.NewFileName("file2.txt")
+	if err != nil {
+		t.Fatalf("Failed to create fileName2: %v", err)
+	}
+	mimeType1, err := valueobjects.NewMimeType("text/plain")
+	if err != nil {
+		t.Fatalf("Failed to create mimeType1: %v", err)
+	}
+	mimeType2, err := valueobjects.NewMimeType("text/plain")
+	if err != nil {
+		t.Fatalf("Failed to create mimeType2: %v", err)
+	}
+	fileSize1, err := valueobjects.NewFileSize(100)
+	if err != nil {
+		t.Fatalf("Failed to create fileSize1: %v", err)
+	}
+	fileSize2, err := valueobjects.NewFileSize(200)
+	if err != nil {
+		t.Fatalf("Failed to create fileSize2: %v", err)
+	}
+
 	attachment1 := entities.NewAttachment(
 		entities.AttachmentID("attach1"),
 		docID,
@@ -185,11 +192,11 @@ func TestCleanupService_CleanupDocument_Expired(t *testing.T) {
 		mimeType2,
 		fileSize2,
 	)
-	
+
 	attachments := make(map[entities.AttachmentID]*entities.Attachment)
 	attachments[attachment1.ID()] = attachment1
 	attachments[attachment2.ID()] = attachment2
-	
+
 	doc := entities.RestoreDocument(
 		docID,
 		valueobjects.EmptyContent(),
@@ -199,7 +206,6 @@ func TestCleanupService_CleanupDocument_Expired(t *testing.T) {
 		1,
 	)
 
-	// Setup expectations
 	mockDocRepo.EXPECT().
 		FindByID(ctx, docID).
 		Return(doc, nil)
@@ -212,9 +218,7 @@ func TestCleanupService_CleanupDocument_Expired(t *testing.T) {
 		Delete(ctx, attachment2.ID()).
 		Return(nil)
 
-	// Execute cleanup
-	err := service.CleanupDocument(ctx, docID)
-
+	err = service.CleanupDocument(ctx, docID)
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
 	}
@@ -222,7 +226,7 @@ func TestCleanupService_CleanupDocument_Expired(t *testing.T) {
 
 func TestCleanupService_CleanupDocument_NotExpired(t *testing.T) {
 	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
+	t.Cleanup(ctrl.Finish)
 
 	mockDocRepo := repositories.NewMockDocumentRepository(ctrl)
 	mockFileStorage := repositories.NewMockFileStorageRepository(ctrl)
@@ -230,22 +234,16 @@ func TestCleanupService_CleanupDocument_NotExpired(t *testing.T) {
 	interval := 5 * time.Minute
 
 	service := NewCleanupService(mockDocRepo, mockFileStorage, expirationService, interval)
-	ctx := context.Background()
+	ctx := t.Context()
 
-	// Create a non-expired document
 	docID := entities.DocumentID("test-doc")
 	doc := entities.NewDocument(docID)
 
-	// Setup expectations
 	mockDocRepo.EXPECT().
 		FindByID(ctx, docID).
 		Return(doc, nil)
 
-	// Should not call Delete on file storage
-
-	// Execute cleanup
 	err := service.CleanupDocument(ctx, docID)
-
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
 	}
@@ -253,7 +251,7 @@ func TestCleanupService_CleanupDocument_NotExpired(t *testing.T) {
 
 func TestCleanupService_CleanupDocument_NotFound(t *testing.T) {
 	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
+	t.Cleanup(ctrl.Finish)
 
 	mockDocRepo := repositories.NewMockDocumentRepository(ctrl)
 	mockFileStorage := repositories.NewMockFileStorageRepository(ctrl)
@@ -261,18 +259,15 @@ func TestCleanupService_CleanupDocument_NotFound(t *testing.T) {
 	interval := 5 * time.Minute
 
 	service := NewCleanupService(mockDocRepo, mockFileStorage, expirationService, interval)
-	ctx := context.Background()
+	ctx := t.Context()
 
 	docID := entities.DocumentID("non-existent")
 
-	// Setup expectations
 	mockDocRepo.EXPECT().
 		FindByID(ctx, docID).
 		Return(nil, entities.ErrDocumentNotFound)
 
-	// Execute cleanup - should not error for not found
 	err := service.CleanupDocument(ctx, docID)
-
 	if err != nil {
 		t.Errorf("Expected no error for not found document, got %v", err)
 	}
@@ -280,7 +275,7 @@ func TestCleanupService_CleanupDocument_NotFound(t *testing.T) {
 
 func TestCleanupService_CleanupDocument_RepositoryError(t *testing.T) {
 	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
+	t.Cleanup(ctrl.Finish)
 
 	mockDocRepo := repositories.NewMockDocumentRepository(ctrl)
 	mockFileStorage := repositories.NewMockFileStorageRepository(ctrl)
@@ -288,17 +283,15 @@ func TestCleanupService_CleanupDocument_RepositoryError(t *testing.T) {
 	interval := 5 * time.Minute
 
 	service := NewCleanupService(mockDocRepo, mockFileStorage, expirationService, interval)
-	ctx := context.Background()
+	ctx := t.Context()
 
 	docID := entities.DocumentID("test-doc")
 	expectedError := errors.New("database error")
 
-	// Setup expectations
 	mockDocRepo.EXPECT().
 		FindByID(ctx, docID).
 		Return(nil, expectedError)
 
-	// Execute cleanup
 	err := service.CleanupDocument(ctx, docID)
 
 	if err != expectedError {
@@ -308,7 +301,7 @@ func TestCleanupService_CleanupDocument_RepositoryError(t *testing.T) {
 
 func TestCleanupService_CleanupDocument_FileDeleteError(t *testing.T) {
 	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
+	t.Cleanup(ctrl.Finish)
 
 	mockDocRepo := repositories.NewMockDocumentRepository(ctrl)
 	mockFileStorage := repositories.NewMockFileStorageRepository(ctrl)
@@ -316,25 +309,33 @@ func TestCleanupService_CleanupDocument_FileDeleteError(t *testing.T) {
 	interval := 5 * time.Minute
 
 	service := NewCleanupService(mockDocRepo, mockFileStorage, expirationService, interval)
-	ctx := context.Background()
+	ctx := t.Context()
 
-	// Create an expired document with attachments
 	docID := entities.DocumentID("test-doc")
 	expiredTime := valueobjects.ExpirationTimeFrom(time.Now().Add(-25 * time.Hour))
-	fileName, _ := valueobjects.NewFileName("file.txt")
-	mimeType, _ := valueobjects.NewMimeType("text/plain")
-	fileSize, _ := valueobjects.NewFileSize(100)
+	fileName, err := valueobjects.NewFileName("file.txt")
+	if err != nil {
+		t.Fatalf("Failed to create fileName: %v", err)
+	}
+	mimeType, err := valueobjects.NewMimeType("text/plain")
+	if err != nil {
+		t.Fatalf("Failed to create mimeType: %v", err)
+	}
+	fileSize, err := valueobjects.NewFileSize(100)
+	if err != nil {
+		t.Fatalf("Failed to create fileSize: %v", err)
+	}
 	attachment := entities.NewAttachment(
-		entities.AttachmentID("attach1"),
+		"attach1",
 		docID,
 		fileName,
 		mimeType,
 		fileSize,
 	)
-	
+
 	attachments := make(map[entities.AttachmentID]*entities.Attachment)
 	attachments[attachment.ID()] = attachment
-	
+
 	doc := entities.RestoreDocument(
 		docID,
 		valueobjects.EmptyContent(),
@@ -344,19 +345,15 @@ func TestCleanupService_CleanupDocument_FileDeleteError(t *testing.T) {
 		1,
 	)
 
-	// Setup expectations
 	mockDocRepo.EXPECT().
 		FindByID(ctx, docID).
 		Return(doc, nil)
 
-	// File delete fails but should not return error
 	mockFileStorage.EXPECT().
 		Delete(ctx, attachment.ID()).
 		Return(errors.New("storage error"))
 
-	// Execute cleanup - should not return error even if file delete fails
-	err := service.CleanupDocument(ctx, docID)
-
+	err = service.CleanupDocument(ctx, docID)
 	if err != nil {
 		t.Errorf("Expected no error even with file delete failure, got %v", err)
 	}
@@ -364,7 +361,7 @@ func TestCleanupService_CleanupDocument_FileDeleteError(t *testing.T) {
 
 func TestCleanupService_ContextCancellation(t *testing.T) {
 	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
+	t.Cleanup(ctrl.Finish)
 
 	mockDocRepo := repositories.NewMockDocumentRepository(ctrl)
 	mockFileStorage := repositories.NewMockFileStorageRepository(ctrl)
@@ -372,28 +369,21 @@ func TestCleanupService_ContextCancellation(t *testing.T) {
 	interval := 100 * time.Millisecond
 
 	service := NewCleanupService(mockDocRepo, mockFileStorage, expirationService, interval)
-	
-	// Create a context that can be cancelled
-	ctx, cancel := context.WithCancel(context.Background())
 
-	// Start the service
+	ctx, cancel := context.WithCancel(t.Context())
+
 	service.Start(ctx)
 
-	// Give it time to start
 	time.Sleep(50 * time.Millisecond)
 
-	// Cancel the context
 	cancel()
 
-	// Give it time to stop
 	time.Sleep(150 * time.Millisecond)
 
-	// Service should have stopped due to context cancellation
 	service.mu.Lock()
 	running := service.running
 	service.mu.Unlock()
 
-	// Clean up
 	service.Stop()
 
 	if running {
@@ -403,7 +393,7 @@ func TestCleanupService_ContextCancellation(t *testing.T) {
 
 func TestCleanupService_PeriodicExecution(t *testing.T) {
 	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
+	t.Cleanup(ctrl.Finish)
 
 	mockDocRepo := repositories.NewMockDocumentRepository(ctrl)
 	mockFileStorage := repositories.NewMockFileStorageRepository(ctrl)
@@ -411,20 +401,11 @@ func TestCleanupService_PeriodicExecution(t *testing.T) {
 	interval := 100 * time.Millisecond
 
 	service := NewCleanupService(mockDocRepo, mockFileStorage, expirationService, interval)
-	ctx := context.Background()
+	ctx := t.Context()
 
-	// Start the service
 	service.Start(ctx)
 
-	// Let it run for multiple intervals
 	time.Sleep(350 * time.Millisecond)
 
-	// Stop the service
 	service.Stop()
-
-	// The performCleanup should have been called at least 3 times
-	// (once immediately and at least 2 more times from ticker)
-	// Since performCleanup is a no-op in the current implementation,
-	// we can't directly test this, but we verify the service ran
-	// without errors
 }

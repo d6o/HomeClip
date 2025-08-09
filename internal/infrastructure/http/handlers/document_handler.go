@@ -52,11 +52,10 @@ func (h *DocumentHandler) SaveContent(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	response, err := h.appService.UpdateContent(ctx, "", req.Content)
 	if err != nil {
-		// Check if it's a validation error
-		if errors.Is(err, valueobjects.ErrContentTooLarge) || 
-		   errors.Is(err, valueobjects.ErrInvalidContent) ||
-		   strings.Contains(err.Error(), "too large") ||
-		   strings.Contains(err.Error(), "exceeds maximum") {
+		if errors.Is(err, valueobjects.ErrContentTooLarge) ||
+			errors.Is(err, valueobjects.ErrInvalidContent) ||
+			strings.Contains(err.Error(), "too large") ||
+			strings.Contains(err.Error(), "exceeds maximum") {
 			h.handleError(w, err, http.StatusBadRequest)
 		} else {
 			h.handleError(w, err, http.StatusInternalServerError)

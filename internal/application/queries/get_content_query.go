@@ -33,11 +33,9 @@ func (h *GetContentQueryHandler) Handle(ctx context.Context, query GetContentQue
 		return nil, err
 	}
 
-	// Convert attachments to DTOs
 	attachments := document.GetAttachments()
 	dtoAttachments := make([]dtos.AttachmentDTO, 0, len(attachments))
 	for _, att := range attachments {
-		// Skip expired attachments
 		if !att.IsExpired() {
 			dtoAttachments = append(dtoAttachments, dtos.AttachmentDTO{
 				ID:         string(att.ID()),

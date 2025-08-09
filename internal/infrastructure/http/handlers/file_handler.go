@@ -14,10 +14,10 @@ import (
 )
 
 type FileHandler struct {
-	uploadHandler     application.UploadFileCommandHandler
-	deleteHandler     application.DeleteFileCommandHandler
-	getFileHandler    application.GetFileQueryHandler
-	listFilesHandler  application.ListFilesQueryHandler
+	uploadHandler    application.UploadFileCommandHandler
+	deleteHandler    application.DeleteFileCommandHandler
+	getFileHandler   application.GetFileQueryHandler
+	listFilesHandler application.ListFilesQueryHandler
 }
 
 func NewFileHandler(
@@ -40,7 +40,6 @@ func (h *FileHandler) UploadFile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Parse multipart form (10MB max)
 	err := r.ParseMultipartForm(10 << 20)
 	if err != nil {
 		h.writeErrorResponse(w, "Failed to parse form", http.StatusBadRequest)
@@ -54,15 +53,13 @@ func (h *FileHandler) UploadFile(w http.ResponseWriter, r *http.Request) {
 	}
 	defer file.Close()
 
-	// Get mime type
 	mimeType := header.Header.Get("Content-Type")
 	if mimeType == "" {
-		// Try to detect from extension
 		mimeType = getMimeTypeFromFileName(header.Filename)
 	}
 
 	cmd := commands.UploadFileCommand{
-		DocumentID: "", // Use default document
+		DocumentID: "",
 		FileName:   header.Filename,
 		MimeType:   mimeType,
 		Size:       header.Size,
@@ -96,7 +93,6 @@ func (h *FileHandler) DownloadFile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Extract attachment ID from URL path
 	attachmentID := extractAttachmentID(r.URL.Path)
 	if attachmentID == "" {
 		http.Error(w, "Attachment ID required", http.StatusBadRequest)
@@ -104,7 +100,7 @@ func (h *FileHandler) DownloadFile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	query := queries.GetFileQuery{
-		DocumentID:   "", // Use default document
+		DocumentID:   "",
 		AttachmentID: attachmentID,
 	}
 
@@ -115,12 +111,10 @@ func (h *FileHandler) DownloadFile(w http.ResponseWriter, r *http.Request) {
 	}
 	defer result.Reader.Close()
 
-	// Set headers
 	w.Header().Set("Content-Type", result.Attachment.MimeType().Value())
 	w.Header().Set("Content-Disposition", "attachment; filename=\""+result.Attachment.FileName().Value()+"\"")
 	w.Header().Set("Content-Length", strconv.FormatInt(result.Attachment.Size().Value(), 10))
 
-	// Stream file content
 	io.Copy(w, result.Reader)
 }
 
@@ -130,7 +124,6 @@ func (h *FileHandler) DeleteFile(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Extract attachment ID from URL path
 	attachmentID := extractAttachmentID(r.URL.Path)
 	if attachmentID == "" {
 		http.Error(w, "Attachment ID required", http.StatusBadRequest)
@@ -138,7 +131,7 @@ func (h *FileHandler) DeleteFile(w http.ResponseWriter, r *http.Request) {
 	}
 
 	cmd := commands.DeleteFileCommand{
-		DocumentID:   "", // Use default document
+		DocumentID:   "",
 		AttachmentID: attachmentID,
 	}
 
@@ -162,7 +155,7 @@ func (h *FileHandler) ListFiles(w http.ResponseWriter, r *http.Request) {
 	}
 
 	query := queries.ListFilesQuery{
-		DocumentID: "", // Use default document
+		DocumentID: "",
 	}
 
 	attachments, err := h.listFilesHandler.Handle(r.Context(), query)
@@ -173,7 +166,6 @@ func (h *FileHandler) ListFiles(w http.ResponseWriter, r *http.Request) {
 
 	dtoAttachments := make([]dtos.AttachmentDTO, 0, len(attachments))
 	for _, att := range attachments {
-		// Skip expired attachments
 		if !att.IsExpired() {
 			dtoAttachments = append(dtoAttachments, dtos.AttachmentDTO{
 				ID:         string(att.ID()),
@@ -237,7 +229,7 @@ func getMimeTypeFromFileName(filename string) string {
 		"xls":  "application/vnd.ms-excel",
 		"xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
 	}
-	
+
 	if mimeType, ok := mimeTypes[ext]; ok {
 		return mimeType
 	}

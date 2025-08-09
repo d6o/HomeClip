@@ -11,9 +11,7 @@ import (
 	"github.com/d6o/homeclip/internal/domain/repositories"
 )
 
-var (
-	ErrFileNotFound = errors.New("file not found")
-)
+var ErrFileNotFound = errors.New("file not found")
 
 type MemoryFileStorage struct {
 	mu    sync.RWMutex
@@ -34,7 +32,7 @@ func (s *MemoryFileStorage) Store(ctx context.Context, attachmentID entities.Att
 
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	
+
 	s.files[attachmentID] = data
 	return nil
 }
@@ -55,7 +53,6 @@ func (s *MemoryFileStorage) Delete(ctx context.Context, attachmentID entities.At
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	// Idempotent delete - no error if file doesn't exist
 	delete(s.files, attachmentID)
 	return nil
 }

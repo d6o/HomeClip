@@ -28,10 +28,7 @@ func (r *MemoryDocumentRepository) FindByID(ctx context.Context, id entities.Doc
 		return nil, entities.ErrDocumentNotFound
 	}
 
-	// Check if document is expired
 	if document.IsExpired() {
-		// For expired documents, we still return them but the domain layer will handle the expiration
-		// This allows for grace period handling
 	}
 
 	return r.cloneDocument(document), nil
@@ -54,12 +51,11 @@ func (r *MemoryDocumentRepository) Exists(ctx context.Context, id entities.Docum
 }
 
 func (r *MemoryDocumentRepository) cloneDocument(doc *entities.Document) *entities.Document {
-	// Clone attachments map
 	attachments := make(map[entities.AttachmentID]*entities.Attachment)
 	for _, att := range doc.GetAttachments() {
 		attachments[att.ID()] = att
 	}
-	
+
 	return entities.RestoreDocument(
 		doc.ID(),
 		doc.Content(),

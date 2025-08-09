@@ -39,17 +39,13 @@ func (h *DeleteFileCommandHandler) Handle(ctx context.Context, cmd DeleteFileCom
 	}
 
 	attachmentID := entities.AttachmentID(cmd.AttachmentID)
-	
-	// Remove attachment from document
+
 	if err := document.RemoveAttachment(attachmentID); err != nil {
 		return err
 	}
 
-	// Delete file from storage
 	if err := h.fileStorageRepo.Delete(ctx, attachmentID); err != nil {
-		// Log error but continue - file might already be deleted
 	}
 
-	// Save document
 	return h.documentRepo.Save(ctx, document)
 }

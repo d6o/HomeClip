@@ -2,6 +2,7 @@ package queries
 
 import (
 	"context"
+	"errors"
 
 	"github.com/d6o/homeclip/internal/domain/entities"
 	"github.com/d6o/homeclip/internal/domain/repositories"
@@ -29,7 +30,7 @@ func (h *ListFilesQueryHandler) Handle(ctx context.Context, query ListFilesQuery
 
 	document, err := h.documentRepo.FindByID(ctx, documentID)
 	if err != nil {
-		if err == entities.ErrDocumentNotFound {
+		if errors.Is(err, entities.ErrDocumentNotFound) {
 			return []*entities.Attachment{}, nil
 		}
 		return nil, err

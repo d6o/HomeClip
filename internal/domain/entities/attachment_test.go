@@ -55,6 +55,3 @@ func TestNewAttachment(t *testing.T) {
 		t.Error("Expected new attachment to not be expired")
 	}
 }
-
-// Type checking methods (IsImage, IsText, IsPDF) have been moved to the MimeType value object
-// and are tested in valueobjects/file_test.go

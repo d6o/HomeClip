@@ -20,11 +20,11 @@ type UpdateContentResponse struct {
 }
 
 type GetContentResponse struct {
-	Content     string           `json:"content"`
-	LastUpdated time.Time        `json:"lastUpdated"`
-	ExpiresAt   time.Time        `json:"expiresAt"`
-	Version     int              `json:"version"`
-	Attachments []AttachmentDTO  `json:"attachments"`
+	Content     string          `json:"content"`
+	LastUpdated time.Time       `json:"lastUpdated"`
+	ExpiresAt   time.Time       `json:"expiresAt"`
+	Version     int             `json:"version"`
+	Attachments []AttachmentDTO `json:"attachments"`
 }
 
 type AttachmentDTO struct {
