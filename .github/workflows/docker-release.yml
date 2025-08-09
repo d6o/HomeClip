@@ -82,7 +82,8 @@ jobs:
         run: |
           echo "Waiting for image to be available in registry..."
           sleep 10
-          docker pull ghcr.io/${{ github.repository }}:${{ steps.version.outputs.version }}
+          REPO_LOWER=$(echo "${{ github.repository }}" | tr '[:upper:]' '[:lower:]')
+          docker pull ghcr.io/${REPO_LOWER}:${{ steps.version.outputs.version }}
           
       - name: Generate SBOM
         uses: anchore/sbom-action@v0
