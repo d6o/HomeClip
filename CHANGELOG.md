@@ -1,3 +1,9 @@
+## [1.2.0](https://github.com/d6o/homeclip/compare/v1.1.1...v1.2.0) (2025-08-09)
+
+### Features
+
+* wait before generating sbom ([7259e9e](https://github.com/d6o/homeclip/commit/7259e9e60dc3fbe9b65b84a4655357af9d7bb086))
+
 ## [1.1.1](https://github.com/d6o/homeclip/compare/v1.1.0...v1.1.1) (2025-08-09)
 
 ### Bug Fixes
