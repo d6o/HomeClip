@@ -1,3 +1,22 @@
+## [1.3.0](https://github.com/d6o/homeclip/compare/v1.2.4...v1.3.0) (2025-08-09)
+
+### Features
+
+* added dark mode support ([fc98108](https://github.com/d6o/homeclip/commit/fc9810879a5c69a6168385618686e1c0f8ee2b9f))
+* added footer with credits to the application ([2b3b29b](https://github.com/d6o/homeclip/commit/2b3b29ba17aa6b2abe13f6825a70de5d7f5119d5))
+* refactored control boxes style ([4292091](https://github.com/d6o/homeclip/commit/42920911a10a4b2898396e4063244396d6f4a9f3))
+* refactored uploaded files buttons ([60e95d6](https://github.com/d6o/homeclip/commit/60e95d6d97bec448cc79d19d8ab374ae6f2c8d16))
+* removed mime type validation ([7f7d55c](https://github.com/d6o/homeclip/commit/7f7d55c929c086c3e376c482446645b9f3d36217))
+
+### Bug Fixes
+
+* fix router unit tests ([c98ed57](https://github.com/d6o/homeclip/commit/c98ed5704b8a3e3e31e85f84fc07fd502df40ef9))
+
+### Code Refactoring
+
+* **app.js:** handle upload errors more gracefully ([5b117de](https://github.com/d6o/homeclip/commit/5b117de540c74ad2c4417935047732f04cdf73fc))
+* clean up files ([855b1fc](https://github.com/d6o/homeclip/commit/855b1fcc34191f4083644f51e0ff205170813724))
+
 ## [1.2.4](https://github.com/d6o/homeclip/compare/v1.2.3...v1.2.4) (2025-08-09)
 
 ### Bug Fixes
