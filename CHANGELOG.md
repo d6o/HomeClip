@@ -1,3 +1,9 @@
+## [1.2.4](https://github.com/d6o/homeclip/compare/v1.2.3...v1.2.4) (2025-08-09)
+
+### Bug Fixes
+
+* multi archtecture build ([1527d3a](https://github.com/d6o/homeclip/commit/1527d3a40a099f032c341fecaf2f60da7ed53e46))
+
 ## [1.2.3](https://github.com/d6o/homeclip/compare/v1.2.2...v1.2.3) (2025-08-09)
 
 ### Bug Fixes
