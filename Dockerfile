@@ -1,5 +1,9 @@
 FROM golang:1.24-alpine AS builder
 
+# These args are automatically set by Docker buildx for multi-platform builds
+ARG TARGETPLATFORM
+ARG TARGETARCH
+
 # Install security updates
 RUN apk update && apk upgrade && apk add --no-cache ca-certificates
 
@@ -13,12 +17,13 @@ RUN go mod download
 COPY . .
 
 # Build the binary with security flags
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=${TARGETARCH} go build \
     -ldflags="-w -s -extldflags '-static'" \
     -a -installsuffix cgo \
     -o server ./cmd/server
 
 # Final stage - distroless for minimal attack surface
+# Using the multi-arch distroless image
 FROM gcr.io/distroless/static:nonroot
 
 # Copy the binary from builder (static files are embedded in the binary)
