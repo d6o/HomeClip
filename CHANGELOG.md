@@ -1,3 +1,9 @@
+## [1.2.2](https://github.com/d6o/homeclip/compare/v1.2.1...v1.2.2) (2025-08-09)
+
+### Bug Fixes
+
+* repo name when running sbom ([e683371](https://github.com/d6o/homeclip/commit/e683371885906a85ed3a65ade133c5fcedab1585))
+
 ## [1.2.1](https://github.com/d6o/homeclip/compare/v1.2.0...v1.2.1) (2025-08-09)
 
 ### Bug Fixes
