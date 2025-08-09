@@ -1,0 +1,12 @@
+{
+  "name": "homeclip",
+  "version": "0.0.0",
+  "private": false,
+  "description": "HomeClip - Your Household Clipboard",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/d6o/homeclip.git"
+  },
+  "author": "d6o",
+  "license": "MIT"
+}
