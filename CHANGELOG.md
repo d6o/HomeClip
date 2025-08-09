@@ -1,3 +1,9 @@
+## [1.2.1](https://github.com/d6o/homeclip/compare/v1.2.0...v1.2.1) (2025-08-09)
+
+### Bug Fixes
+
+* repo name must be lowercase on pull ([0cfff3d](https://github.com/d6o/homeclip/commit/0cfff3d03353a54a97af35823ea56afd24e03741))
+
 ## [1.2.0](https://github.com/d6o/homeclip/compare/v1.1.1...v1.2.0) (2025-08-09)
 
 ### Features
