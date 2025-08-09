@@ -45,94 +45,40 @@ jobs:
           name: coverage
           path: coverage.out
 
-  # Build Docker image on every push and PR (without pushing)
-  docker-build:
-    name: Docker Build
+  # Build and publish Docker images on main branch only
+  # Skip if commit message contains [skip ci] (from changelog commits)
+  release-and-publish:
+    name: Release and Publish
+    if: |
+      github.event_name == 'push' && 
+      github.ref == 'refs/heads/main' && 
+      !contains(github.event.head_commit.message, '[skip ci]')
+    needs: [test]
     runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Extract metadata
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ghcr.io/${{ github.repository }}
-          tags: |
-            type=ref,event=branch
-            type=ref,event=pr
-            type=sha
-
-      - name: Build Docker image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          platforms: linux/amd64,linux/arm64,linux/arm/v7
-          push: false
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          build-args: |
-            VERSION=${{ github.ref_name }}
-            COMMIT=${{ github.sha }}
-            BUILD_DATE=${{ github.event.head_commit.timestamp }}
-
-  # Only run semantic-release on main branch
-  release:
-    name: Release
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    needs: [test, docker-build]
-    runs-on: ubuntu-latest
-    outputs:
-      new_release_published: ${{ steps.semantic.outputs.new_release_published }}
-      new_release_version: ${{ steps.semantic.outputs.new_release_version }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          persist-credentials: false
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      - name: Install dependencies
+      - name: Get next version
+        id: version
         run: |
-          npm install -g semantic-release@latest
-          npm install -g @semantic-release/changelog@latest
-          npm install -g @semantic-release/git@latest
-          npm install -g @semantic-release/github@latest
-          npm install -g @semantic-release/commit-analyzer@latest
-          npm install -g @semantic-release/release-notes-generator@latest
-          npm install -g conventional-changelog-conventionalcommits@latest
-
-      - name: Release
-        id: semantic
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GIT_AUTHOR_NAME: github-actions[bot]
-          GIT_AUTHOR_EMAIL: github-actions[bot]@users.noreply.github.com
-          GIT_COMMITTER_NAME: github-actions[bot]
-          GIT_COMMITTER_EMAIL: github-actions[bot]@users.noreply.github.com
-        run: npx semantic-release
-
-  # Publish Docker image only when a new release is created
-  docker-publish:
-    name: Publish Docker Image
-    needs: release
-    if: needs.release.outputs.new_release_published == 'true'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          ref: v${{ needs.release.outputs.new_release_version }}
+          # Get the latest tag
+          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+          echo "Latest tag: $LATEST_TAG"
+          
+          # Parse version numbers
+          VERSION="${LATEST_TAG#v}"
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
+          
+          # Increment patch version for simplicity
+          NEW_PATCH=$((PATCH + 1))
+          NEW_VERSION="${MAJOR}.${MINOR}.${NEW_PATCH}"
+          
+          echo "version=${NEW_VERSION}" >> $GITHUB_OUTPUT
+          echo "tag=v${NEW_VERSION}" >> $GITHUB_OUTPUT
+          echo "New version will be: v${NEW_VERSION}"
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -151,11 +97,8 @@ jobs:
           images: ghcr.io/${{ github.repository }}
           tags: |
             type=raw,value=latest
-            type=raw,value=${{ needs.release.outputs.new_release_version }}
-            type=raw,value=v${{ needs.release.outputs.new_release_version }}
-            type=semver,pattern={{version}},value=${{ needs.release.outputs.new_release_version }}
-            type=semver,pattern={{major}}.{{minor}},value=${{ needs.release.outputs.new_release_version }}
-            type=semver,pattern={{major}},value=${{ needs.release.outputs.new_release_version }}
+            type=raw,value=${{ steps.version.outputs.version }}
+            type=raw,value=v${{ steps.version.outputs.version }}
 
       - name: Build and push Docker image
         id: build
@@ -169,21 +112,41 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           build-args: |
-            VERSION=v${{ needs.release.outputs.new_release_version }}
+            VERSION=${{ steps.version.outputs.tag }}
             COMMIT=${{ github.sha }}
             BUILD_DATE=${{ github.event.head_commit.timestamp }}
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: Release ${{ steps.version.outputs.tag }}
+          body: |
+            ## Changes in this release
+            
+            **Commit**: ${{ github.event.head_commit.message }}
+            **SHA**: ${{ github.sha }}
+            
+            ## Docker Image
+            
+            ```bash
+            docker pull ghcr.io/${{ github.repository }}:${{ steps.version.outputs.version }}
+            docker pull ghcr.io/${{ github.repository }}:latest
+            ```
+          draft: false
+          prerelease: false
 
       - name: Generate SBOM
         uses: anchore/sbom-action@v0
         with:
-          image: ghcr.io/${{ github.repository }}:${{ needs.release.outputs.new_release_version }}
+          image: ghcr.io/${{ github.repository }}:${{ steps.version.outputs.version }}
           format: spdx-json
           output-file: sbom.spdx.json
 
       - name: Upload SBOM to release
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: v${{ needs.release.outputs.new_release_version }}
+          tag_name: ${{ steps.version.outputs.tag }}
           files: sbom.spdx.json
 
       - name: Sign container image
@@ -191,3 +154,24 @@ jobs:
           COSIGN_EXPERIMENTAL: 1
         run: |
           cosign sign --yes ghcr.io/${{ github.repository }}@${{ steps.build.outputs.digest }}
+
+  # Build only on PRs (no push)
+  docker-build-pr:
+    name: Docker Build (PR)
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          platforms: linux/amd64,linux/arm64,linux/arm/v7
+          push: false
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
