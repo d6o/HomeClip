@@ -1,3 +1,9 @@
+## [1.2.3](https://github.com/d6o/homeclip/compare/v1.2.2...v1.2.3) (2025-08-09)
+
+### Bug Fixes
+
+* install cosig ([98fb156](https://github.com/d6o/homeclip/commit/98fb1566d6feae5e4d33fa7d6471d8f0f16aee53))
+
 ## [1.2.2](https://github.com/d6o/homeclip/compare/v1.2.1...v1.2.2) (2025-08-09)
 
 ### Bug Fixes
