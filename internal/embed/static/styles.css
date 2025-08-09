@@ -32,8 +32,8 @@
     --border-light: #343a40;
     --accent-color: #6c757d;
     --accent-hover: #868e96;
-    --success-color: #28a745;
-    --danger-color: #dc3545;
+    --success-color: #52c41a;
+    --danger-color: #ff4d4f;
     --header-bg: #2d3137;
     --header-border: #495057;
     --input-bg: #2d3137;
@@ -80,10 +80,6 @@ body {
     background: var(--header-bg);
     color: var(--text-primary);
     padding: 20px 30px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
     border-bottom: 1px solid var(--header-border);
     transition: background-color 0.3s ease, border-color 0.3s ease;
 }
@@ -91,9 +87,8 @@ body {
 .header-top {
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: space-between;
     width: 100%;
-    position: relative;
 }
 
 .header h1 {
@@ -103,19 +98,24 @@ body {
     color: var(--text-primary);
 }
 
+.header-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
 .theme-toggle {
-    position: absolute;
-    right: 0;
     background: transparent;
     border: 2px solid var(--border-color);
     border-radius: 8px;
-    padding: 8px;
+    padding: 6px 10px;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     transition: all 0.3s ease;
     color: var(--text-primary);
+    height: 36px;
 }
 
 .theme-toggle:hover {
@@ -137,36 +137,42 @@ body:not([data-theme]) .theme-icon-dark {
     display: block;
 }
 
-.tagline {
-    font-size: 14px;
-    color: var(--text-secondary);
-    margin-top: 8px;
-    margin-bottom: 10px;
-}
-
 .status {
     font-size: 12px;
-    padding: 4px 12px;
-    background: var(--bg-tertiary);
-    border-radius: 20px;
+    padding: 0 12px;
+    background: transparent;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
     transition: all 0.3s ease;
-    margin-top: 5px;
     color: var(--text-secondary);
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    cursor: default;
+    margin: 0;
+    height: 36px;
+}
+
+.status:hover {
+    background: var(--bg-tertiary);
 }
 
 .status.saving {
-    background: var(--accent-color);
-    color: var(--bg-primary);
+    border-color: var(--accent-color);
+    color: var(--accent-color);
+    background: rgba(73, 80, 87, 0.1);
 }
 
 .status.saved {
-    background: var(--success-color);
-    color: white;
+    border-color: var(--success-color);
+    color: var(--success-color);
+    background: rgba(40, 167, 69, 0.1);
 }
 
 .status.error {
-    background: var(--danger-color);
-    color: white;
+    border-color: var(--danger-color);
+    color: var(--danger-color);
+    background: rgba(220, 53, 69, 0.1);
 }
 
 .main-content {
@@ -302,12 +308,27 @@ body:not([data-theme]) .theme-icon-dark {
 }
 
 .expiration-display {
-    background: var(--bg-tertiary);
-    padding: 6px 12px;
-    border-radius: 20px;
-    font-size: 13px;
+    font-size: 12px;
+    padding: 0 12px;
+    background: transparent;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    transition: all 0.3s ease;
     color: var(--text-secondary);
     font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    cursor: default;
+    margin: 0;
+    height: 36px;
+}
+
+.expiration-display:hover {
+    background: var(--bg-tertiary);
+}
+
+.expiration-display:empty {
+    display: none;
 }
 
 .file-actions {
@@ -370,24 +391,38 @@ body:not([data-theme]) .theme-icon-dark {
     }
     
     .header {
-        padding: 15px 20px;
+        padding: 15px;
     }
     
     .header h1 {
-        font-size: 24px;
+        font-size: 20px;
     }
     
-    .tagline {
-        font-size: 12px;
-    }
-    
-    .theme-toggle {
-        position: static;
-        margin-left: auto;
+    .header-controls {
+        gap: 6px;
     }
     
     .header-top {
         justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    
+    .status {
+        font-size: 11px;
+        padding: 0 10px;
+        height: 32px;
+    }
+    
+    .theme-toggle {
+        padding: 5px 8px;
+        height: 32px;
+    }
+    
+    .expiration-display {
+        font-size: 11px;
+        padding: 0 10px;
+        height: 32px;
     }
     
     /* Stack layout vertically on mobile */

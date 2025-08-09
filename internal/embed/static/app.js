@@ -78,7 +78,7 @@
         } catch (error) {
             console.error('Error loading content:', error);
             updateStatus('Error loading', 'error');
-            setTimeout(() => updateStatus('Ready'), 3000);
+            setTimeout(() => updateStatus('Ready', 'saved'), 3000);
         }
     }
     
@@ -104,11 +104,11 @@
             }
             
             updateStatus('Saved', 'saved');
-            setTimeout(() => updateStatus('Ready'), 2000);
+            setTimeout(() => updateStatus('Ready', 'saved'), 2000);
         } catch (error) {
             console.error('Error saving content:', error);
             updateStatus('Error saving', 'error');
-            setTimeout(() => updateStatus('Ready'), 3000);
+            setTimeout(() => updateStatus('Ready', 'saved'), 3000);
         } finally {
             isLoading = false;
         }
@@ -182,19 +182,13 @@
     
     function displayExpiration(expiresAt) {
         const expirationDiv = document.getElementById('expiration-display');
-        if (!expirationDiv) {
-            const header = document.querySelector('.header');
-            const div = document.createElement('div');
-            div.id = 'expiration-display';
-            div.className = 'expiration-display';
-            header.appendChild(div);
+        if (expirationDiv) {
+            const expirationText = formatExpiration(expiresAt);
+            expirationDiv.textContent = expirationText;
+            
+            // Update expiration display every minute
+            setTimeout(() => displayExpiration(expiresAt), 60000);
         }
-        
-        const expirationText = formatExpiration(expiresAt);
-        document.getElementById('expiration-display').textContent = expirationText;
-        
-        // Update expiration display every minute
-        setTimeout(() => displayExpiration(expiresAt), 60000);
     }
     
     function displayFiles(files) {
@@ -267,7 +261,7 @@
         
         // Reset input
         event.target.value = '';
-        setTimeout(() => updateStatus('Ready'), 2000);
+        setTimeout(() => updateStatus('Ready', 'saved'), 2000);
     }
     
     async function handleDownload(event) {
@@ -292,7 +286,7 @@
         } catch (error) {
             console.error('Error downloading file:', error);
             updateStatus('Download failed', 'error');
-            setTimeout(() => updateStatus('Ready'), 2000);
+            setTimeout(() => updateStatus('Ready', 'saved'), 2000);
         }
     }
     
@@ -316,11 +310,11 @@
             
             updateStatus('File deleted', 'saved');
             loadFiles();
-            setTimeout(() => updateStatus('Ready'), 2000);
+            setTimeout(() => updateStatus('Ready', 'saved'), 2000);
         } catch (error) {
             console.error('Error deleting file:', error);
             updateStatus('Delete failed', 'error');
-            setTimeout(() => updateStatus('Ready'), 2000);
+            setTimeout(() => updateStatus('Ready', 'saved'), 2000);
         }
     }
     
