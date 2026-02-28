@@ -35,6 +35,12 @@ make clean            # remove binary and data
 ### Docker
 
 ```sh
+docker run -p 8080:8080 -v homeclip-data:/data ghcr.io/d6o/homeclip:2
+```
+
+Or build from source:
+
+```sh
 docker build -t homeclip .
 docker run -p 8080:8080 -v homeclip-data:/data homeclip
 ```
