@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HomeClip</title>
+    <style>
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #0f0f0f;
+            color: #e0e0e0;
+            min-height: 100vh;
+            padding: 1.5rem;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 1.75rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: #fff;
+            letter-spacing: -0.02em;
+        }
+
+        h1 span {
+            color: #6366f1;
+        }
+
+        .section {
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 12px;
+            padding: 1.25rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .section-header {
+            font-size: 0.8rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #888;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .status {
+            font-size: 0.7rem;
+            text-transform: none;
+            letter-spacing: normal;
+            color: #555;
+        }
+
+        .status.saved {
+            color: #22c55e;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 300px;
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 8px;
+            color: #e0e0e0;
+            font-family: inherit;
+            font-size: 0.95rem;
+            padding: 1rem;
+            resize: vertical;
+            outline: none;
+            transition: border-color 0.2s;
+            line-height: 1.6;
+        }
+
+        textarea:focus {
+            border-color: #6366f1;
+        }
+
+        .drop-zone {
+            border: 2px dashed #333;
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 1rem;
+        }
+
+        .drop-zone.dragover {
+            border-color: #6366f1;
+            background: rgba(99, 102, 241, 0.08);
+        }
+
+        .drop-zone p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .drop-zone p strong {
+            color: #6366f1;
+        }
+
+        .drop-zone .limit {
+            font-size: 0.75rem;
+            color: #555;
+            margin-top: 0.5rem;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .file-list {
+            list-style: none;
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #222;
+            gap: 1rem;
+        }
+
+        .file-item:last-child {
+            border-bottom: none;
+        }
+
+        .file-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .file-name {
+            color: #6366f1;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            display: block;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .file-name:hover {
+            text-decoration: underline;
+        }
+
+        .file-meta {
+            font-size: 0.75rem;
+            color: #555;
+            margin-top: 0.2rem;
+        }
+
+        .btn-delete {
+            background: none;
+            border: 1px solid #333;
+            color: #888;
+            border-radius: 6px;
+            padding: 0.35rem 0.75rem;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+        .btn-delete:hover {
+            border-color: #ef4444;
+            color: #ef4444;
+        }
+
+        .empty {
+            text-align: center;
+            color: #444;
+            font-size: 0.85rem;
+            padding: 1rem 0;
+        }
+
+        .toast-container {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .toast {
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            font-size: 0.85rem;
+            color: #e0e0e0;
+            animation: toast-in 0.3s ease;
+            max-width: 300px;
+        }
+
+        .toast.error {
+            border-color: #ef4444;
+            color: #fca5a5;
+        }
+
+        @keyframes toast-in {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 1rem;
+            }
+
+            textarea {
+                min-height: 200px;
+            }
+
+            .file-item {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Home<span>Clip</span></h1>
+
+        <div class="section">
+            <div class="section-header">
+                <span>Clipboard</span>
+                <span class="status" id="save-status"></span>
+            </div>
+            <textarea id="clipboard" placeholder="Type or paste text here..."></textarea>
+        </div>
+
+        <div class="section">
+            <div class="section-header">
+                <span>Files</span>
+            </div>
+
+            <div class="drop-zone" id="drop-zone">
+                <p><strong>Drop files here</strong> or click to browse</p>
+                <p class="limit">Max file size: 100 MB</p>
+                <input type="file" id="file-input" multiple>
+            </div>
+
+            <ul class="file-list" id="file-list">
+                <li class="empty">No files</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="toast-container" id="toast-container"></div>
+
+    <script>
+        const textarea = document.getElementById("clipboard");
+        const saveStatus = document.getElementById("save-status");
+        const dropZone = document.getElementById("drop-zone");
+        const fileInput = document.getElementById("file-input");
+        const fileList = document.getElementById("file-list");
+        const toastContainer = document.getElementById("toast-container");
+
+        let debounceTimer = null;
+
+        function showToast(message, isError) {
+            const toast = document.createElement("div");
+            toast.className = "toast" + (isError ? " error" : "");
+            toast.textContent = message;
+            toastContainer.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        function formatSize(bytes) {
+            if (bytes < 1024) return bytes + " B";
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
+            if (bytes < 1024 * 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(1) + " MB";
+            return (bytes / (1024 * 1024 * 1024)).toFixed(1) + " GB";
+        }
+
+        function formatDate(iso) {
+            const d = new Date(iso);
+            return d.toLocaleString();
+        }
+
+        async function loadText() {
+            try {
+                const res = await fetch("/api/text");
+                if (!res.ok) return;
+                const data = await res.json();
+                textarea.value = data.content || "";
+            } catch (_) {}
+        }
+
+        async function saveText() {
+            saveStatus.textContent = "Saving...";
+            saveStatus.className = "status";
+            try {
+                const res = await fetch("/api/text", {
+                    method: "PUT",
+                    body: textarea.value,
+                });
+                if (res.ok) {
+                    saveStatus.textContent = "Saved";
+                    saveStatus.className = "status saved";
+                } else {
+                    saveStatus.textContent = "Save failed";
+                    saveStatus.className = "status";
+                }
+            } catch (_) {
+                saveStatus.textContent = "Save failed";
+                saveStatus.className = "status";
+            }
+        }
+
+        textarea.addEventListener("input", () => {
+            clearTimeout(debounceTimer);
+            saveStatus.textContent = "Unsaved";
+            saveStatus.className = "status";
+            debounceTimer = setTimeout(saveText, 1000);
+        });
+
+        async function loadFiles() {
+            try {
+                const res = await fetch("/api/files");
+                if (!res.ok) return;
+                const files = await res.json();
+                renderFiles(files);
+            } catch (_) {}
+        }
+
+        function renderFiles(files) {
+            if (files.length === 0) {
+                fileList.innerHTML = '<li class="empty">No files</li>';
+                return;
+            }
+
+            fileList.innerHTML = "";
+            for (const f of files) {
+                const li = document.createElement("li");
+                li.className = "file-item";
+                li.innerHTML =
+                    '<div class="file-info">' +
+                        '<a class="file-name" href="/api/files/' + encodeURIComponent(f.name) + '">' +
+                            escapeHtml(f.name) +
+                        '</a>' +
+                        '<div class="file-meta">' + formatSize(f.size) + ' &middot; ' + formatDate(f.uploadedAt) + '</div>' +
+                    '</div>' +
+                    '<button class="btn-delete" data-name="' + escapeAttr(f.name) + '">Delete</button>';
+                fileList.appendChild(li);
+            }
+        }
+
+        function escapeHtml(s) {
+            const div = document.createElement("div");
+            div.textContent = s;
+            return div.innerHTML;
+        }
+
+        function escapeAttr(s) {
+            return s.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        }
+
+        fileList.addEventListener("click", async (e) => {
+            const btn = e.target.closest(".btn-delete");
+            if (!btn) return;
+
+            const name = btn.dataset.name;
+            try {
+                const res = await fetch("/api/files/" + encodeURIComponent(name), { method: "DELETE" });
+                if (res.ok) {
+                    showToast("Deleted " + name);
+                    loadFiles();
+                } else {
+                    showToast("Failed to delete", true);
+                }
+            } catch (_) {
+                showToast("Failed to delete", true);
+            }
+        });
+
+        async function uploadFiles(files) {
+            for (const file of files) {
+                if (file.size > 100 * 1024 * 1024) {
+                    showToast(file.name + " exceeds 100 MB", true);
+                    continue;
+                }
+
+                const form = new FormData();
+                form.append("file", file);
+
+                try {
+                    const res = await fetch("/api/files", { method: "POST", body: form });
+                    if (res.ok) {
+                        showToast("Uploaded " + file.name);
+                    } else {
+                        showToast("Failed to upload " + file.name, true);
+                    }
+                } catch (_) {
+                    showToast("Failed to upload " + file.name, true);
+                }
+            }
+            loadFiles();
+        }
+
+        dropZone.addEventListener("click", () => fileInput.click());
+
+        fileInput.addEventListener("change", () => {
+            if (fileInput.files.length > 0) {
+                uploadFiles(fileInput.files);
+                fileInput.value = "";
+            }
+        });
+
+        dropZone.addEventListener("dragover", (e) => {
+            e.preventDefault();
+            dropZone.classList.add("dragover");
+        });
+
+        dropZone.addEventListener("dragleave", () => {
+            dropZone.classList.remove("dragover");
+        });
+
+        dropZone.addEventListener("drop", (e) => {
+            e.preventDefault();
+            dropZone.classList.remove("dragover");
+            if (e.dataTransfer.files.length > 0) {
+                uploadFiles(e.dataTransfer.files);
+            }
+        });
+
+        loadText();
+        loadFiles();
+        setInterval(loadFiles, 30000);
+    </script>
+</body>
+</html>

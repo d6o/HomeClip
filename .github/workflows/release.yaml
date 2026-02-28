@@ -1,0 +1,122 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Determine version and create release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+
+          # Get latest tag or default to v0.0.0
+          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+          echo "Latest tag: $LATEST_TAG"
+
+          # Parse current version
+          VERSION="${LATEST_TAG#v}"
+          MAJOR=$(echo "$VERSION" | cut -d. -f1)
+          MINOR=$(echo "$VERSION" | cut -d. -f2)
+          PATCH=$(echo "$VERSION" | cut -d. -f3)
+
+          # Get commits since last tag (or all commits if no tag)
+          if git rev-parse "$LATEST_TAG" >/dev/null 2>&1; then
+            COMMITS=$(git log "${LATEST_TAG}..HEAD" --pretty=format:"%s|%h" --no-merges)
+          else
+            COMMITS=$(git log --pretty=format:"%s|%h" --no-merges)
+          fi
+
+          if [ -z "$COMMITS" ]; then
+            echo "No new commits since $LATEST_TAG"
+            exit 0
+          fi
+
+          # Determine bump level and collect changelog entries
+          BUMP="none"
+          FEATURES=""
+          FIXES=""
+
+          while IFS= read -r line; do
+            MSG="${line%%|*}"
+            HASH="${line##*|}"
+            # Strip type prefix to get the description
+            DESC=$(echo "$MSG" | sed -E 's/^[a-z]+(\([^)]*\))?!?:[[:space:]]*//')
+
+            # Check for breaking changes
+            if echo "$MSG" | grep -qE '^[a-z]+(\([^)]*\))?!:' || echo "$MSG" | grep -q 'BREAKING CHANGE'; then
+              BUMP="major"
+              FEATURES="${FEATURES}\n- ${DESC} (${HASH})"
+              continue
+            fi
+
+            case "$MSG" in
+              feat:*|feat\(*)
+                [ "$BUMP" != "major" ] && BUMP="minor"
+                FEATURES="${FEATURES}\n- ${DESC} (${HASH})"
+                ;;
+              fix:*|fix\(*)
+                [ "$BUMP" = "none" ] && BUMP="patch"
+                FIXES="${FIXES}\n- ${DESC} (${HASH})"
+                ;;
+              docs:*|chore:*|ci:*|refactor:*|test:*|style:*|build:*|perf:*)
+                ;;
+              *)
+                ;;
+            esac
+          done <<< "$COMMITS"
+
+          if [ "$BUMP" = "none" ]; then
+            echo "No releasable commits found"
+            exit 0
+          fi
+
+          # Compute next version
+          case "$BUMP" in
+            major) MAJOR=$((MAJOR + 1)); MINOR=0; PATCH=0 ;;
+            minor) MINOR=$((MINOR + 1)); PATCH=0 ;;
+            patch) PATCH=$((PATCH + 1)) ;;
+          esac
+
+          NEXT_TAG="v${MAJOR}.${MINOR}.${PATCH}"
+          echo "Next version: $NEXT_TAG ($BUMP bump)"
+
+          # Build changelog
+          CHANGELOG="## What's Changed\n"
+
+          if [ -n "$FEATURES" ]; then
+            CHANGELOG="$CHANGELOG\n### Features\n$FEATURES\n"
+          fi
+
+          if [ -n "$FIXES" ]; then
+            CHANGELOG="$CHANGELOG\n### Fixes\n$FIXES\n"
+          fi
+
+          if [ "$LATEST_TAG" = "v0.0.0" ]; then
+            CHANGELOG="$CHANGELOG\n**Full Changelog**: https://github.com/${{ github.repository }}/commits/${NEXT_TAG}"
+          else
+            CHANGELOG="$CHANGELOG\n**Full Changelog**: https://github.com/${{ github.repository }}/compare/${LATEST_TAG}...${NEXT_TAG}"
+          fi
+
+          # Create tag and release
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "$NEXT_TAG" -m "Release $NEXT_TAG"
+          git push origin "$NEXT_TAG"
+
+          printf '%b' "$CHANGELOG" | gh release create "$NEXT_TAG" \
+            --title "$NEXT_TAG" \
+            --notes-file - \
+            --verify-tag
