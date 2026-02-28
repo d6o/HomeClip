@@ -35,11 +35,12 @@ jobs:
           VERSION="${TAG#v}"
           MAJOR=$(echo "$VERSION" | cut -d. -f1)
           MINOR=$(echo "$VERSION" | cut -d. -f2)
+          IMG=$(echo "${IMAGE}" | tr '[:upper:]' '[:lower:]')
           echo "tags<<EOF" >> "$GITHUB_OUTPUT"
-          echo "${IMAGE}:${VERSION}" >> "$GITHUB_OUTPUT"
-          echo "${IMAGE}:${MAJOR}.${MINOR}" >> "$GITHUB_OUTPUT"
-          echo "${IMAGE}:${MAJOR}" >> "$GITHUB_OUTPUT"
-          echo "${IMAGE}:latest" >> "$GITHUB_OUTPUT"
+          echo "${IMG}:${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "${IMG}:${MAJOR}.${MINOR}" >> "$GITHUB_OUTPUT"
+          echo "${IMG}:${MAJOR}" >> "$GITHUB_OUTPUT"
+          echo "${IMG}:latest" >> "$GITHUB_OUTPUT"
           echo "EOF" >> "$GITHUB_OUTPUT"
 
       - name: Build and push
